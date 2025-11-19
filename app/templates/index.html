@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Insurance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+    <div class="orb orb-three"></div>
+
+    <header class="site-header">
+        <div class="brand">
+            <div class="brand-mark">SI</div>
+            <div>
+                <p class="brand-name">Smart Insurance</p>
+                <p class="brand-tagline">Predictive premium insights</p>
+            </div>
+        </div>
+        <nav class="nav-links">
+            <a href="#overview">Overview</a>
+            <a href="#estimate">Estimator</a>
+            <a href="#insights">Insights</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <a class="cta-link" href="#contact">Talk to an advisor</a>
+    </header>
+
+    <main>
+        <section id="overview" class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Forecast with confidence</p>
+                <h1>Design a coverage plan that keeps pace with your lifestyle.</h1>
+                <p>
+                    Smart Insurance blends demographic, lifestyle, and regional signals to estimate annual insurance costs.
+                    Experiment with inputs to see how choices shift your projected premium.
+                </p>
+            </div>
+            <div class="hero-card">
+                <h2>Included with every estimate</h2>
+                <ul>
+                    <li>Detailed assumptions you can share with your advisor</li>
+                    <li>Personalized talking points for plan selection meetings</li>
+                    <li>Next-step checklist to keep your coverage on track</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="estimate" class="layout">
+        <section class="panel form-panel">
+            <div class="panel-header">
+                <h2>Get your personalized estimate</h2>
+                <p>Complete the fields below and receive a projection instantly.</p>
+            </div>
+
+            {% if error %}
+                <div class="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="post" action="/predict" class="form-grid">
+                <label class="field">
+                    <span>Age</span>
+                    <input id="age" type="number" step="1" name="age" min="18" max="100"
+                           placeholder="35" value="{{ form_values.get('age', '') }}" required>
+                </label>
+
+                <label class="field">
+                    <span>Sex</span>
+                    <select id="sex" name="sex" required>
+                        <option value="" disabled {% if not form_values.get('sex') %}selected{% endif %}>Select</option>
+                        <option value="male" {% if form_values.get('sex') == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if form_values.get('sex') == 'female' %}selected{% endif %}>Female</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>BMI</span>
+                    <input id="bmi" type="number" step="0.1" name="bmi" min="10" max="60"
+                           placeholder="27.5" value="{{ form_values.get('bmi', '') }}" required>
+                </label>
+
+                <label class="field">
+                    <span>Children</span>
+                    <input id="children" type="number" step="1" name="children" min="0" max="10"
+                           placeholder="2" value="{{ form_values.get('children', '') }}" required>
+                </label>
+
+                <div class="field">
+                    <span>Smoker</span>
+                    <div class="segmented-control">
+                        <input type="radio" id="smoker-no" name="smoker" value="no"
+                               {% if form_values.get('smoker', 'no') == 'no' %}checked{% endif %}>
+                        <label for="smoker-no">No</label>
+                        <input type="radio" id="smoker-yes" name="smoker" value="yes"
+                               {% if form_values.get('smoker') == 'yes' %}checked{% endif %}>
+                        <label for="smoker-yes">Yes</label>
+                    </div>
+                </div>
+
+                <label class="field">
+                    <span>Region</span>
+                    <select id="region" name="region" required>
+                        <option value="" disabled {% if not form_values.get('region') %}selected{% endif %}>Choose</option>
+                        <option value="northeast" {% if form_values.get('region') == 'northeast' %}selected{% endif %}>Northeast</option>
+                        <option value="northwest" {% if form_values.get('region') == 'northwest' %}selected{% endif %}>Northwest</option>
+                        <option value="southeast" {% if form_values.get('region') == 'southeast' %}selected{% endif %}>Southeast</option>
+                        <option value="southwest" {% if form_values.get('region') == 'southwest' %}selected{% endif %}>Southwest</option>
+                    </select>
+                </label>
+
+                <button type="submit" class="primary-action">Predict premium</button>
+            </form>
+
+            <p class="privacy-note">🔒 Your inputs stay on this device and are not stored or shared.</p>
+        </section>
+
+        <section class="panel result-panel">
+            <p class="mini-label">Projection summary</p>
+            {% if prediction is not none %}
+                <p class="result-title">Estimated annual cost</p>
+                <p class="prediction-amount">${{ "{:,.2f}".format(prediction) }}</p>
+                <p class="result-note">
+                    This figure reflects similar customer profiles analyzed within Smart Insurance.
+                    Adjust inputs to test scenarios before meeting with an advisor.
+                </p>
+            {% else %}
+                <p class="result-title">Awaiting inputs</p>
+                <p class="prediction-placeholder">$ ---.--</p>
+                <p class="result-note">Fill out the form to unlock your projection.</p>
+            {% endif %}
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <p class="stat-label">Estimate reliability</p>
+                    <p class="stat-value">±8%</p>
+                    <p class="stat-hint">Benchmarked against historical claim trends.</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Update cycle</p>
+                    <p class="stat-value">Weekly</p>
+                    <p class="stat-hint">Fresh data keeps forecasts relevant.</p>
+                </div>
+            </div>
+        </section>
+        </section>
+
+        <section id="insights" class="insights">
+        <h3>What shapes the Smart Insurance estimate?</h3>
+        <div class="insight-grid">
+            <article class="insight-card">
+                <h4>Lifestyle indicators</h4>
+                <p>Habits such as smoking status heavily sway long-term risk and premiums.</p>
+            </article>
+            <article class="insight-card">
+                <h4>Regional trends</h4>
+                <p>Health care costs vary by U.S. region, so your location fine-tunes the prediction.</p>
+            </article>
+            <article class="insight-card">
+                <h4>Family profile</h4>
+                <p>Dependents and BMI help the engine benchmark coverage tiers suited for you.</p>
+            </article>
+        </div>
+        </section>
+
+        <section id="contact" class="contact-section">
+            <div class="contact-card">
+                <h3>Questions about your quote?</h3>
+                <p>Reach out and our licensed team will walk you through plan options in detail.</p>
+                <div class="contact-grid">
+                    <div>
+                        <p class="contact-label">Call us</p>
+                        <p class="contact-info">(415) 555-0199</p>
+                    </div>
+                    <div>
+                        <p class="contact-label">Email</p>
+                        <p class="contact-info">care@smartinsurance.ai</p>
+                    </div>
+                    <div>
+                        <p class="contact-label">Visit</p>
+                        <p class="contact-info">1200 Market Street, Suite 400<br>San Francisco, CA</p>
+                    </div>
+                </div>
+                <a class="cta-link solid" href="mailto:care@smartinsurance.ai">Book a coverage review</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>Designed for proactive planners. Pair this estimate with personalized coverage anytime.</p>
+    </footer>
+</body>
+</html>

@@ -17,10 +17,8 @@ from pathlib import Path
 from typing import Dict, Iterable
 
 import joblib
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from sklearn.base import clone
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Lasso, LinearRegression, Ridge
@@ -57,25 +55,34 @@ def explore_data(df: pd.DataFrame) -> None:
     corr_path = REPORTS_DIR / "correlation.csv"
     corr.to_csv(corr_path)
 
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(corr, annot=True, cmap="coolwarm")
-    corr_fig = FIGURES_DIR / "correlation_matrix.png"
-    plt.title("Correlation Matrix")
-    plt.tight_layout()
-    plt.savefig(corr_fig)
-    plt.close()
-    print(f"[explore] Correlation heatmap saved to {corr_fig}")
+    try:
+        import matplotlib.pyplot as plt  # type: ignore
+        import seaborn as sns  # type: ignore
+    except ImportError:
+        print(
+            "[explore] matplotlib/seaborn not installed; skipped heatmap + categorical plots "
+            "(install them if you need the visuals)."
+        )
+    else:
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(corr, annot=True, cmap="coolwarm")
+        corr_fig = FIGURES_DIR / "correlation_matrix.png"
+        plt.title("Correlation Matrix")
+        plt.tight_layout()
+        plt.savefig(corr_fig)
+        plt.close()
+        print(f"[explore] Correlation heatmap saved to {corr_fig}")
 
-    categorical_fig = FIGURES_DIR / "categorical_distribution.png"
-    plt.figure(figsize=(12, 4))
-    for i, col in enumerate(["sex", "smoker", "region"], start=1):
-        plt.subplot(1, 3, i)
-        sns.countplot(data=df, x=col)
-        plt.title(col.title())
-    plt.tight_layout()
-    plt.savefig(categorical_fig)
-    plt.close()
-    print(f"[explore] Categorical distribution plot saved to {categorical_fig}")
+        categorical_fig = FIGURES_DIR / "categorical_distribution.png"
+        plt.figure(figsize=(12, 4))
+        for i, col in enumerate(["sex", "smoker", "region"], start=1):
+            plt.subplot(1, 3, i)
+            sns.countplot(data=df, x=col)
+            plt.title(col.title())
+        plt.tight_layout()
+        plt.savefig(categorical_fig)
+        plt.close()
+        print(f"[explore] Categorical distribution plot saved to {categorical_fig}")
 
     for col in ["sex", "smoker", "region"]:
         counts_path = REPORTS_DIR / f"{col}_value_counts.csv"

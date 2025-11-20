@@ -1,5 +1,7 @@
 # Smart Insurance
 
+**Live Demo:** https://smart-insurance-app.onrender.com
+
 Smart Insurance is an end-to-end project that prepares the classic medical-cost dataset, trains a scikit-learn regression pipeline, and serves a polished FastAPI experience where visitors can explore premium scenarios, view projections, and reach the advisory team directly.
 
 ## Repository Layout
@@ -94,6 +96,21 @@ Smart Insurance is an end-to-end project that prepares the classic medical-cost 
 2. Containerize the project (Docker + `docker-compose`) for reproducible deployments.
 3. Publish the FastAPI app to Render, Railway, or Fly.io and wire the contact form to a CRM webhook.
 4. Extend the notebooks with SHAP or permutation importance visuals to explain contribution per feature.
+
+## Deployment (Render)
+
+Deploying the app so others—like your instructor—can access it only requires a hosted `uvicorn` process. Render keeps the repo in sync automatically:
+
+1. Push this repository to GitHub (already done).
+2. Create an account at [Render](https://render.com) and click **New → Web Service**.
+3. Connect your GitHub account, choose the `smart-insurance-app` repo, and fill in:
+   - **Environment**: Python 3.12 (or latest available)
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4. Click **Create Web Service**. Render installs dependencies, launches the server, and returns a public URL such as `https://smart-insurance-app.onrender.com`.
+5. Add that URL to the top of this README (e.g., “Live demo: …”) once the deployment finishes.
+
+The same steps work for Railway, Fly.io, or Azure App Service—just ensure the start command binds to `0.0.0.0` and reads the platform-provided port.
 
 ---
 

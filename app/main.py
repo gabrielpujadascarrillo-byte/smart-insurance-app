@@ -1,75 +1,37 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI
+from pydantic import BaseModel
 import joblib
-import numpy as np
-import uvicorn
+from pathlib import Path
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
 
-model = joblib.load("app/models/insurance_model.pkl")
-FEATURES = joblib.load("app/models/insurance_features.pkl")
+# --- Input schema ---
+class InsuranceData(BaseModel):
+    age: int
+    sex: str
+    bmi: float
+    children: int
+    smoker: str
+    region: str
 
+# --- Load model ---
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "models" / "insurance_model.pkl"
 
-def render_page(request: Request, prediction: float | None = None,
-                form_values: dict | None = None, error: str | None = None) -> HTMLResponse:
-    context = {
-        "request": request,
-        "prediction": prediction,
-        "form_values": form_values or {},
-        "error": error,
-    }
-    return templates.TemplateResponse("index.html", context)
+model = joblib.load(MODEL_PATH)
 
+# --- Prediction route ---
+@app.post("/predict")
+def predict(data: InsuranceData):
+    # convert input into model format (order must match your model)
+    X = [[
+        data.age,
+        1 if data.sex == "male" else 0,
+        data.bmi,
+        data.children,
+        1 if data.smoker == "yes" else 0,
+        {"southwest": 0, "southeast": 1, "northwest": 2, "northeast": 3}[data.region]
+    ]]
 
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return render_page(request)
-
-
-@app.post("/predict", response_class=HTMLResponse)
-async def predict(request: Request,
-                  age: float = Form(...),
-                  sex: str = Form(...),
-                  bmi: float = Form(...),
-                  children: int = Form(...),
-                  smoker: str = Form(...),
-                  region: str = Form(...)):
-
-    form_values = {
-        "age": age,
-        "sex": sex,
-        "bmi": bmi,
-        "children": children,
-        "smoker": smoker,
-        "region": region,
-    }
-
-    try:
-        features_dict = {
-            "age": float(age),
-            "bmi": float(bmi),
-            "children": int(children),
-            "sex_male": 1 if sex.lower() == "male" else 0,
-            "smoker_yes": 1 if smoker.lower() == "yes" else 0,
-            "region_northwest": 1 if region == "northwest" else 0,
-            "region_southeast": 1 if region == "southeast" else 0,
-            "region_southwest": 1 if region == "southwest" else 0,
-        }
-
-        feature_row = [features_dict.get(name, 0) for name in FEATURES]
-        features_array = np.array([feature_row])
-
-        prediction = float(model.predict(features_array)[0])
-        prediction = round(prediction, 2)
-        return render_page(request, prediction=prediction, form_values=form_values)
-    except Exception:
-        error_message = "We couldn't generate a prediction right now. Please verify the inputs and try again."
-        return render_page(request, form_values=form_values, error=error_message)
-
-
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", reload=True)
+    pred = model.predict(X)[0]
+    return {"prediction": float(pred)}

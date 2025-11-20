@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>House Price Prediction</title>
+</head>
+<body>
+
+    <h1>HouseMaxify</h1>
+
+    <label>Bedrooms: </label>
+    <input type="number" id="bedrooms"><br><br>
+
+    <label>Bathrooms: </label>
+    <input type="number" id="bathrooms"><br><br>
+
+    <label>Sqft: </label>
+    <input type="number" id="sqft_living"><br><br>
+
+    <button onclick="makePrediction()">Predict</button>
+
+    <h2 id="output"></h2>
+
+<script>
+function makePrediction() {
+    const data = {
+        bedrooms: Number(document.getElementById("bedrooms").value),
+        bathrooms: Number(document.getElementById("bathrooms").value),
+        sqft_living: Number(document.getElementById("sqft_living").value)
+    };
+
+    fetch("http://127.0.0.1:8000/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(json => {
+        document.getElementById("output").innerText = 
+            "Predicted Price: " + JSON.stringify(json);
+    });
+}
+</script>
+
+</body>
+</html>

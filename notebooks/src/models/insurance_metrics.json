@@ -1,6 +1,0 @@
-{
-  "model_name": "GradientBoostingRegressor",
-  "mae": 2532.873081755152,
-  "rmse": 4375.013435806671,
-  "r2": 0.8958361311047247
-}

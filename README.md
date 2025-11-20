@@ -1,6 +1,6 @@
 # Smart Insurance
 
-**Live Demo (may take up to one minute to load due to service inactivity):** https://smart-insurance-app.onrender.com
+**Live Demo (may take around to one minute to load due to server inactivity):** https://smart-insurance-app.onrender.com
 
 Smart Insurance is an end-to-end project that prepares the classic medical-cost dataset, trains a scikit-learn regression pipeline, and serves a polished FastAPI experience where visitors can explore premium scenarios, view projections, and reach the advisory team directly.
 
